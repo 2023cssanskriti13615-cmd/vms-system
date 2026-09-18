@@ -43,16 +43,16 @@ class Config:
     # Priority: APP_BASE_URL  ->  RENDER_EXTERNAL_URL  ->  current request host
     APP_BASE_URL = os.environ.get("APP_BASE_URL") or os.environ.get("RENDER_EXTERNAL_URL")
 
-    # --- Email (SMTP) --------------------------------------------------
-    MAIL_SERVER = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
-    MAIL_PORT = int(os.environ.get("MAIL_PORT", 465))
-    MAIL_USE_SSL = _get_bool("MAIL_USE_SSL", True)
-    MAIL_USERNAME = os.environ.get("MAIL_USERNAME", "")
-    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD", "")
+    # --- Email (Brevo HTTP API) -----------------------------------------
+    # Cloud free tiers (Render included) block outbound SMTP ports, so email
+    # is sent through Brevo's HTTPS API instead of smtplib. Get a free API
+    # key at https://app.brevo.com -> Settings -> SMTP & API -> API Keys.
+    BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "")
+    MAIL_USERNAME = os.environ.get("MAIL_USERNAME", "")   # the "from" address, must be a verified sender in Brevo
     MAIL_SENDER_NAME = os.environ.get("MAIL_SENDER_NAME", "Visitor Desk")
     # When email is not configured the app still works — the invite link and
     # the pass are shown on screen instead. Useful during a live demo.
-    MAIL_ENABLED = bool(MAIL_USERNAME and MAIL_PASSWORD)
+    MAIL_ENABLED = bool(BREVO_API_KEY and MAIL_USERNAME)
 
     # --- Organisation details (shown on the pass) ----------------------
     ORG_NAME = os.environ.get("ORG_NAME", "Visitor Management System")

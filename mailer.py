@@ -2,53 +2,50 @@
 mailer.py
 Sends the two emails the system needs: the invitation link and the QR gate pass.
 
+Uses Brevo's transactional email HTTP API (https://api.brevo.com) instead of
+raw SMTP. Cloud platforms like Render block outbound SMTP ports (25/465/587)
+on their free tier to stop spam, but plain HTTPS (port 443) always works —
+so an HTTP-based email API is the reliable choice for a deployed app.
+
 Mail is sent on a background thread so the person clicking "Send invitation"
-never has to wait for the SMTP handshake to finish.
+never has to wait for the request to finish.
 """
 
-import smtplib
+import base64
 import threading
-from email.message import EmailMessage
+
+import requests
 
 from config import Config
 
-
-def _connect():
-    if Config.MAIL_USE_SSL:
-        server = smtplib.SMTP_SSL(Config.MAIL_SERVER, Config.MAIL_PORT, timeout=20)
-    else:
-        server = smtplib.SMTP(Config.MAIL_SERVER, Config.MAIL_PORT, timeout=20)
-        server.starttls()
-    server.login(Config.MAIL_USERNAME, Config.MAIL_PASSWORD)
-    return server
+BREVO_ENDPOINT = "https://api.brevo.com/v3/smtp/email"
 
 
-def _deliver(message):
+def _deliver(payload):
     try:
-        with _connect() as server:
-            server.send_message(message)
-        print(f"[mail] sent to {message['To']} — {message['Subject']}")
+        response = requests.post(
+            BREVO_ENDPOINT,
+            headers={
+                "api-key": Config.BREVO_API_KEY,
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
+            json=payload,
+            timeout=20,
+        )
+        if response.status_code >= 300:
+            print(f"[mail] FAILED for {payload['to'][0]['email']}: "
+                  f"{response.status_code} {response.text}")
+        else:
+            print(f"[mail] sent to {payload['to'][0]['email']} — {payload['subject']}")
     except Exception as error:                      # noqa: BLE001
         # A failed email must never crash the visitor workflow. The invite
         # link is always available on screen as a fallback.
-        print(f"[mail] FAILED for {message['To']}: {error}")
+        print(f"[mail] FAILED for {payload['to'][0]['email']}: {error}")
 
 
-def _send_async(message):
-    threading.Thread(target=_deliver, args=(message,), daemon=True).start()
-
-
-def _build(subject, to_address, html_body):
-    message = EmailMessage()
-    message["Subject"] = subject
-    message["From"] = f"{Config.MAIL_SENDER_NAME} <{Config.MAIL_USERNAME}>"
-    message["To"] = to_address
-    message.set_content(
-        "This invitation needs an email client that can display HTML. "
-        "Please open it in your browser."
-    )
-    message.add_alternative(html_body, subtype="html")
-    return message
+def _send_async(payload):
+    threading.Thread(target=_deliver, args=(payload,), daemon=True).start()
 
 
 def _shell(inner_html, footer_note):
@@ -116,6 +113,15 @@ def _button(url, label):
     """
 
 
+def _base_payload(subject, to_address, html_body):
+    return {
+        "sender": {"name": Config.MAIL_SENDER_NAME, "email": Config.MAIL_USERNAME},
+        "to": [{"email": to_address}],
+        "subject": subject,
+        "htmlContent": html_body,
+    }
+
+
 def send_invitation(to_address, host_name, visit_datetime, register_url):
     """Email 1 — asks the visitor to complete their details."""
     if not Config.MAIL_ENABLED:
@@ -141,7 +147,8 @@ def send_invitation(to_address, host_name, visit_datetime, register_url):
       </p>
     """
     html = _shell(body, "This link is personal to you. Please do not forward it.")
-    _send_async(_build(f"Visit invitation from {Config.ORG_NAME}", to_address, html))
+    payload = _base_payload(f"Visit invitation from {Config.ORG_NAME}", to_address, html)
+    _send_async(payload)
     return True
 
 
@@ -171,9 +178,10 @@ def send_gate_pass(to_address, visitor_name, visit_datetime, host_name,
       </p>
     """
     html = _shell(body, "Generated automatically — please do not reply to this email.")
-    message = _build(f"Gate pass — {Config.ORG_NAME}", to_address, html)
-    message.add_attachment(
-        qr_bytes, maintype="image", subtype="png", filename="gate-pass.png"
-    )
-    _send_async(message)
+    payload = _base_payload(f"Gate pass — {Config.ORG_NAME}", to_address, html)
+    payload["attachment"] = [{
+        "content": base64.b64encode(qr_bytes).decode("ascii"),
+        "name": "gate-pass.png",
+    }]
+    _send_async(payload)
     return True
