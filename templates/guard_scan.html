@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Scan a pass{% endblock %}
+{% block wrapclass %}narrow{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>Scan a visitor pass</h1>
+    <p class="muted" style="margin-top:0">
+        Point the camera at the visitor's QR code. The verification screen opens by itself once
+        the code is read.
+    </p>
+
+    <div id="reader"></div>
+    <p id="scan-status" class="hint">Starting the camera…</p>
+
+    <div class="btnrow">
+        <button class="btn ghost sm" id="start-btn" type="button" hidden>Start the camera</button>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Camera not working?</h2>
+    <p class="small muted" style="margin-top:0">
+        Paste the pass link printed under the visitor's QR code, or open the visitor from
+        today's list instead.
+    </p>
+    <form id="manual-form">
+        <div class="field">
+            <label for="manual">Pass link</label>
+            <input type="text" id="manual" placeholder="https://…/verify/…">
+        </div>
+        <button class="btn sm" type="submit">Open verification</button>
+    </form>
+    <p class="small"><a href="{{ url_for('guard_dashboard') }}">Back to today's list</a></p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+    // The QR code holds a full verification URL, so a successful scan is
+    // simply a redirect to that address.
+    const statusLine = document.getElementById("scan-status");
+    const startBtn = document.getElementById("start-btn");
+    let scanner = null;
+    let handled = false;
+
+    function onScanSuccess(decodedText) {
+        if (handled) return;
+        handled = true;
+        statusLine.textContent = "Code read. Opening verification…";
+        if (scanner) { scanner.stop().catch(function () {}); }
+        window.location.href = decodedText;
+    }
+
+    function startCamera() {
+        startBtn.hidden = true;
+        statusLine.textContent = "Starting the camera…";
+        scanner = new Html5Qrcode("reader");
+        scanner.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: { width: 240, height: 240 } },
+            onScanSuccess
+        ).then(function () {
+            statusLine.textContent = "Camera ready. Hold the pass inside the frame.";
+        }).catch(function (err) {
+            statusLine.textContent = "The camera could not be opened (" + err + "). " +
+                "Use the pass link below instead.";
+            startBtn.hidden = false;
+        });
+    }
+
+    startBtn.addEventListener("click", startCamera);
+    startCamera();
+
+    document.getElementById("manual-form").addEventListener("submit", function (event) {
+        event.preventDefault();
+        const value = document.getElementById("manual").value.trim();
+        if (value) { window.location.href = value; }
+    });
+</script>
+{% endblock %}

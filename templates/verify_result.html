@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Pass verification{% endblock %}
+{% block wrapclass %}narrow{% endblock %}
+
+{% block content %}
+{% if state == 'valid' %}
+    <div class="verdict valid">
+        <h1>Pass is valid</h1>
+        <p>Check the photo ID against the details below, then record the entry.</p>
+    </div>
+{% elif state == 'used' %}
+    <div class="verdict used">
+        <h1>Pass already used</h1>
+        <p>Entry was recorded at {{ visitor.entry_time | pretty }} by {{ visitor.verified_by }}.
+           A pass cannot be used a second time.</p>
+    </div>
+{% elif state == 'rejected' %}
+    <div class="verdict rejected">
+        <h1>Entry was refused on this pass</h1>
+        <p>Refused by {{ visitor.verified_by }}{% if visitor.remarks %} — {{ visitor.remarks }}{% endif %}.</p>
+    </div>
+{% elif state == 'incomplete' %}
+    <div class="verdict incomplete">
+        <h1>Visitor details are incomplete</h1>
+        <p>This invitation was never completed by the visitor, so no valid pass exists.
+           Ask them to finish the form from their invitation email.</p>
+    </div>
+{% else %}
+    <div class="verdict unknown">
+        <h1>Pass not recognised</h1>
+        <p>This code does not match any visitor in the register. Do not allow entry.</p>
+    </div>
+{% endif %}
+
+{% if visitor %}
+<div class="card">
+    <h2>Visitor</h2>
+    <div class="table-scroll">
+        <table>
+            <tbody>
+                <tr><th style="width:190px">Name</th><td><strong>{{ visitor.name or '—' }}</strong></td></tr>
+                <tr><th>Phone</th><td>{{ visitor.phone or '—' }}</td></tr>
+                <tr><th>Company</th><td>{{ visitor.company or '—' }}</td></tr>
+                <tr><th>Person to meet</th><td>{{ host }}{% if visitor.unit %} · {{ visitor.unit }}{% endif %}</td></tr>
+                <tr><th>Purpose</th><td>{{ visitor.purpose or '—' }}</td></tr>
+                <tr><th>Expected visit</th><td>{{ visitor.visit_datetime | pretty }}</td></tr>
+                <tr><th>Pass number</th><td class="mono">VP-{{ '%05d' % visitor.id }}</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if state == 'valid' %}
+<div class="card">
+    <h2>Gate decision</h2>
+    <form method="post" action="{{ url_for('verify_decision', token=visitor.token) }}">
+        <input type="hidden" name="decision" value="allow">
+        <button class="btn ok wide" type="submit">Allow entry and record time</button>
+    </form>
+
+    <form method="post" action="{{ url_for('verify_decision', token=visitor.token) }}"
+          style="margin-top:18px">
+        <input type="hidden" name="decision" value="reject">
+        <div class="field">
+            <label for="remarks">Reason for refusing <span class="opt">(optional)</span></label>
+            <input type="text" id="remarks" name="remarks" placeholder="e.g. no photo ID produced">
+        </div>
+        <button class="btn bad wide" type="submit">Refuse entry</button>
+    </form>
+</div>
+{% endif %}
+{% endif %}
+
+<p class="small center" style="margin-top:20px">
+    <a href="{{ url_for('guard_scan') }}">Scan the next pass</a> ·
+    <a href="{{ url_for('guard_dashboard') }}">Today at the gate</a>
+</p>
+{% endblock %}

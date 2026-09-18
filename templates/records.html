@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Visitor register{% endblock %}
+
+{% block content %}
+<div class="card-head">
+    <div>
+        <h1>Visitor register</h1>
+        <p class="muted" style="margin:0">Every invitation, in the order it was created.</p>
+    </div>
+    <a class="btn ghost" href="{{ url_for('employee_dashboard') }}">Back to dashboard</a>
+</div>
+
+<div class="card">
+    <form method="get" class="grid2" style="align-items:end">
+        <div class="field" style="margin-bottom:12px">
+            <label for="q">Search by name, email, company or phone</label>
+            <input type="search" id="q" name="q" value="{{ search }}">
+        </div>
+        <div class="field" style="margin-bottom:12px">
+            <label for="status">Status</label>
+            <select id="status" name="status">
+                <option value="">All</option>
+                <option value="INVITED" {% if status == 'INVITED' %}selected{% endif %}>Waiting on details</option>
+                <option value="REGISTERED" {% if status == 'REGISTERED' %}selected{% endif %}>Pass issued</option>
+                <option value="ENTERED" {% if status == 'ENTERED' %}selected{% endif %}>Entered</option>
+                <option value="REJECTED" {% if status == 'REJECTED' %}selected{% endif %}>Refused</option>
+            </select>
+        </div>
+        <div class="btnrow">
+            <button class="btn sm" type="submit">Apply</button>
+            <a class="btn sm ghost" href="{{ url_for('records') }}">Clear</a>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    {% if visitors %}
+    <div class="table-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>Pass</th>
+                    <th>Visitor</th>
+                    <th>Company</th>
+                    <th>Host</th>
+                    <th>Visit time</th>
+                    <th>Status</th>
+                    <th>Entry</th>
+                    <th>Verified by</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for v in visitors %}
+                <tr>
+                    <td class="mono small">
+                        <a href="{{ url_for('visitor_detail', visitor_id=v.id) }}">VP-{{ '%05d' % v.id }}</a>
+                    </td>
+                    <td>{{ v.name or '—' }}<br><span class="small muted">{{ v.email }}</span></td>
+                    <td>{{ v.company or '—' }}</td>
+                    <td>{{ v.host_name }}</td>
+                    <td class="small">{{ v.visit_datetime | pretty }}</td>
+                    <td><span class="pill {{ v.status }}">{{ v.status | title }}</span></td>
+                    <td class="small">{{ v.entry_time | pretty }}</td>
+                    <td class="small">{{ v.verified_by or '—' }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="muted">Nothing matches that search. Clear the filters to see the full register.</p>
+    {% endif %}
+</div>
+{% endblock %}

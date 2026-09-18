@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Sign in{% endblock %}
+{% block wrapclass %}narrow{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>Sign in</h1>
+    <p class="muted" style="margin-top:0">
+        Use your employee account to invite visitors, or your security account to verify passes
+        at the gate.
+    </p>
+
+    <form method="post" novalidate>
+        <input type="hidden" name="next" value="{{ next }}">
+
+        <div class="field">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" autocomplete="username" required autofocus>
+        </div>
+
+        <div class="field">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" autocomplete="current-password" required>
+        </div>
+
+        <button class="btn wide" type="submit">Sign in</button>
+    </form>
+</div>
+{% endblock %}

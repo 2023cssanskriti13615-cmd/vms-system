@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Visitor Management{% endblock %} · {{ org_name }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header class="topbar noprint">
+    <div class="wrap">
+        <a class="brand" href="{{ url_for('index') }}">
+            <span class="mark">V</span>
+            <span>
+                <strong>{{ org_name }}</strong>
+                <span>{{ org_tagline }}</span>
+            </span>
+        </a>
+
+        <nav class="navlinks">
+            {% if current_role == 'employee' %}
+                <a href="{{ url_for('employee_dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('invite_visitor') }}">Invite a visitor</a>
+                <a href="{{ url_for('records') }}">Visitor records</a>
+            {% elif current_role == 'guard' %}
+                <a href="{{ url_for('guard_dashboard') }}">Today at the gate</a>
+                <a href="{{ url_for('guard_scan') }}">Scan pass</a>
+            {% endif %}
+
+            {% if current_user %}
+                <span class="whoami">{{ current_user }}</span>
+                <a href="{{ url_for('logout') }}">Sign out</a>
+            {% else %}
+                <a href="{{ url_for('login') }}">Sign in</a>
+            {% endif %}
+        </nav>
+    </div>
+</header>
+
+<main>
+    <div class="wrap {% block wrapclass %}{% endblock %}">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+</main>
+
+<footer class="noprint">
+    <div class="wrap">
+        {{ org_name }} · Visitor management system · {{ year }}
+    </div>
+</footer>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Invite a visitor{% endblock %}
+{% block wrapclass %}narrow{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>Invite a visitor</h1>
+    <p class="muted" style="margin-top:0">
+        We email the visitor a private link. They fill in the rest of their details themselves,
+        and the gate pass is issued automatically.
+    </p>
+
+    <form method="post" novalidate>
+        <div class="field">
+            <label for="email">Visitor's email address</label>
+            <input type="email" id="email" name="email" value="{{ form.email or '' }}"
+                   placeholder="visitor@example.com" required autofocus>
+            <p class="hint">The invitation and the gate pass are both sent here.</p>
+        </div>
+
+        <div class="grid2">
+            <div class="field">
+                <label for="person_to_meet">Person to meet</label>
+                <input type="text" id="person_to_meet" name="person_to_meet"
+                       value="{{ form.person_to_meet or current_user }}" required>
+            </div>
+
+            <div class="field">
+                <label for="unit">Unit or department <span class="opt">(optional)</span></label>
+                <input type="text" id="unit" name="unit" value="{{ form.unit or '' }}"
+                       placeholder="e.g. Purchase, HR, IT">
+            </div>
+        </div>
+
+        <div class="field">
+            <label for="visit_datetime">Expected date and time of visit</label>
+            <input type="datetime-local" id="visit_datetime" name="visit_datetime"
+                   value="{{ form.visit_datetime or '' }}" required>
+        </div>
+
+        <div class="field">
+            <label for="purpose">Purpose of visit <span class="opt">(optional)</span></label>
+            <textarea id="purpose" name="purpose"
+                      placeholder="Vendor meeting, interview, maintenance work…">{{ form.purpose or '' }}</textarea>
+        </div>
+
+        <div class="btnrow">
+            <button class="btn" type="submit">Send invitation</button>
+            <a class="btn ghost" href="{{ url_for('employee_dashboard') }}">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

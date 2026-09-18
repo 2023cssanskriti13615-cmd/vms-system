@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="card-head">
+    <div>
+        <h1>Visitor dashboard</h1>
+        <p class="muted" style="margin:0">Signed in as {{ current_user }}</p>
+    </div>
+    <a class="btn" href="{{ url_for('invite_visitor') }}">Invite a visitor</a>
+</div>
+
+<div class="stats">
+    <div class="stat">
+        <b>{{ counts.TOTAL }}</b><span>All invitations</span>
+    </div>
+    <div class="stat">
+        <b>{{ counts.INVITED }}</b><span>Waiting on visitor details</span>
+    </div>
+    <div class="stat is-registered">
+        <b>{{ counts.REGISTERED }}</b><span>Pass issued, not yet arrived</span>
+    </div>
+    <div class="stat is-entered">
+        <b>{{ counts.ENTERED }}</b><span>Entered</span>
+    </div>
+    <div class="stat is-rejected">
+        <b>{{ counts.REJECTED }}</b><span>Refused at gate</span>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-head">
+        <h2>Latest invitations</h2>
+        <a class="small" href="{{ url_for('records') }}">See the full register</a>
+    </div>
+
+    {% if visitors %}
+    <div class="table-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>Visitor</th>
+                    <th>Meeting</th>
+                    <th>Visit time</th>
+                    <th>Status</th>
+                    <th>Entry time</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for v in visitors %}
+                <tr>
+                    <td>
+                        <strong>{{ v.name or 'Details pending' }}</strong><br>
+                        <span class="small muted">{{ v.email }}</span>
+                    </td>
+                    <td>{{ v.person_to_meet }}</td>
+                    <td>{{ v.visit_datetime | pretty }}</td>
+                    <td><span class="pill {{ v.status }}">{{ v.status | title }}</span></td>
+                    <td class="small">{{ v.entry_time | pretty }}</td>
+                    <td><a class="small" href="{{ url_for('visitor_detail', visitor_id=v.id) }}">Open</a></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="muted">No visitors yet. Start by sending your first invitation.</p>
+    <a class="btn" href="{{ url_for('invite_visitor') }}">Invite a visitor</a>
+    {% endif %}
+</div>
+{% endblock %}

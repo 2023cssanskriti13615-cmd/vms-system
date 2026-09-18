@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Your visitor details{% endblock %}
+{% block wrapclass %}narrow{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>Your visitor details</h1>
+    <p class="muted" style="margin-top:0">
+        You are expected at {{ org_name }} on <strong>{{ visitor.visit_datetime | pretty }}</strong>
+        to meet <strong>{{ visitor.person_to_meet }}</strong>. Fill this in once and your gate pass
+        is issued straight away.
+    </p>
+
+    <form method="post" novalidate>
+        <div class="field">
+            <label for="name">Full name</label>
+            <input type="text" id="name" name="name" value="{{ form.name or '' }}" required autofocus>
+        </div>
+
+        <div class="grid2">
+            <div class="field">
+                <label for="phone">Phone number</label>
+                <input type="tel" id="phone" name="phone" value="{{ form.phone or '' }}" required>
+            </div>
+            <div class="field">
+                <label for="company">Company <span class="opt">(optional)</span></label>
+                <input type="text" id="company" name="company" value="{{ form.company or '' }}">
+            </div>
+        </div>
+
+        <div class="field">
+            <label for="unit">Unit or department you are visiting <span class="opt">(optional)</span></label>
+            <input type="text" id="unit" name="unit" value="{{ form.unit or visitor.unit or '' }}">
+        </div>
+
+        <div class="field">
+            <label for="purpose">Purpose of visit</label>
+            <textarea id="purpose" name="purpose">{{ form.purpose or visitor.purpose or '' }}</textarea>
+        </div>
+
+        <button class="btn wide" type="submit">Get my gate pass</button>
+        <p class="hint center">Your details are used only for gate verification and the visitor register.</p>
+    </form>
+</div>
+{% endblock %}

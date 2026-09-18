@@ -1,0 +1,38 @@
+# Render blueprint.
+# If you create the service through the Render dashboard manually you do not
+# need this file, but it documents exactly what the service should look like.
+
+services:
+  - type: web
+    name: smart-visitor-management
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true          # Render creates a random value for you
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: MAIL_SERVER
+        value: smtp.gmail.com
+      - key: MAIL_PORT
+        value: 465
+      - key: MAIL_USE_SSL
+        value: true
+      - key: MAIL_USERNAME
+        sync: false                  # set this in the dashboard
+      - key: MAIL_PASSWORD
+        sync: false                  # Gmail App Password — set in the dashboard
+      - key: MAIL_SENDER_NAME
+        value: Visitor Desk
+      - key: ORG_NAME
+        value: Visitor Management System
+      - key: EMPLOYEE_USERNAME
+        value: employee
+      - key: EMPLOYEE_PASSWORD
+        sync: false
+      - key: GUARD_USERNAME
+        value: guard
+      - key: GUARD_PASSWORD
+        sync: false

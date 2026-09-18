@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Today at the gate{% endblock %}
+
+{% block content %}
+<div class="card-head">
+    <div>
+        <h1>Today at the gate</h1>
+        <p class="muted" style="margin:0">On duty: {{ current_user }}</p>
+    </div>
+    <a class="btn" href="{{ url_for('guard_scan') }}">Scan a pass</a>
+</div>
+
+<div class="stats">
+    <div class="stat is-registered"><b>{{ counts.REGISTERED }}</b><span>Valid passes awaiting arrival</span></div>
+    <div class="stat is-entered"><b>{{ counts.ENTERED }}</b><span>Entries recorded</span></div>
+    <div class="stat is-rejected"><b>{{ counts.REJECTED }}</b><span>Refused</span></div>
+</div>
+
+<div class="card">
+    <h2>Expected today</h2>
+    {% if visitors %}
+    <div class="table-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>Visitor</th>
+                    <th>Company</th>
+                    <th>Meeting</th>
+                    <th>Expected</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for v in visitors %}
+                <tr>
+                    <td><strong>{{ v.name }}</strong><br><span class="small muted">{{ v.phone }}</span></td>
+                    <td>{{ v.company or '—' }}</td>
+                    <td>{{ v.person_to_meet }}</td>
+                    <td>{{ v.visit_datetime | pretty }}</td>
+                    <td><span class="pill {{ v.status }}">{{ v.status | title }}</span></td>
+                    <td><a class="small" href="{{ url_for('verify', token=v.token) }}">Verify</a></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="muted">No visitors are expected today. Scan a pass whenever someone arrives.</p>
+    {% endif %}
+</div>
+{% endblock %}

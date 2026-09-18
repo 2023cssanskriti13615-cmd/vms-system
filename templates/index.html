@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Visitor desk{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <h1>Every visitor invited, verified and logged at the gate.</h1>
+    <p>
+        An employee sends the invitation, the visitor fills in their details from the emailed
+        link, and a QR gate pass is issued. Security scans that pass at the gate, and the
+        entry is written to the visitor register the moment it is approved.
+    </p>
+    <div class="btnrow" style="margin-top:22px">
+        <a class="btn" href="{{ url_for('login') }}">Sign in</a>
+        <a class="btn ghost" href="#how">How it works</a>
+    </div>
+</section>
+
+<ol class="flow" id="how">
+    <li>
+        <h3>Invitation</h3>
+        <p>The employee enters the visitor's email, whom they are meeting and when. The system
+           creates a random token that cannot be guessed.</p>
+    </li>
+    <li>
+        <h3>Visitor details</h3>
+        <p>The visitor opens the emailed link and fills in name, phone, company and purpose of
+           the visit.</p>
+    </li>
+    <li>
+        <h3>Gate pass</h3>
+        <p>A QR code carrying that token is generated and emailed to the visitor as a
+           single-use gate pass.</p>
+    </li>
+    <li>
+        <h3>Gate check</h3>
+        <p>Security scans the code. The system confirms the token, shows who the visitor is,
+           and records the entry time once entry is approved.</p>
+    </li>
+</ol>
+
+<div class="card" style="margin-top:26px">
+    <h2>Who signs in here</h2>
+    <p class="muted" style="margin-top:0">
+        Employees invite visitors and view the register. Security officers verify passes at the
+        gate. Visitors never need an account — their invitation link is their access.
+    </p>
+    {% if not mail_enabled %}
+    <p class="small muted">
+        Email delivery is currently switched off, so invitation links are shown on screen
+        instead of being sent.
+    </p>
+    {% endif %}
+</div>
+{% endblock %}

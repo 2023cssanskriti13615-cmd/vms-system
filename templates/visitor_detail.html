@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Visitor #{{ visitor.id }}{% endblock %}
+
+{% block content %}
+<div class="card-head">
+    <div>
+        <h1>{{ visitor.name or 'Visitor details pending' }}</h1>
+        <p class="muted" style="margin:0">
+            Invitation #{{ visitor.id }} ·
+            <span class="pill {{ visitor.status }}">{{ visitor.status | title }}</span>
+        </p>
+    </div>
+    <a class="btn ghost" href="{{ url_for('employee_dashboard') }}">Back to dashboard</a>
+</div>
+
+<div class="card">
+    <h2>Visit</h2>
+    <div class="table-scroll">
+        <table>
+            <tbody>
+                <tr><th style="width:230px">Email</th><td>{{ visitor.email }}</td></tr>
+                <tr><th>Phone</th><td>{{ visitor.phone or '—' }}</td></tr>
+                <tr><th>Company</th><td>{{ visitor.company or '—' }}</td></tr>
+                <tr><th>Person to meet</th><td>{{ visitor.person_to_meet }}</td></tr>
+                <tr><th>Unit / department</th><td>{{ visitor.unit or '—' }}</td></tr>
+                <tr><th>Purpose</th><td>{{ visitor.purpose or '—' }}</td></tr>
+                <tr><th>Expected visit</th><td>{{ visitor.visit_datetime | pretty }}</td></tr>
+                <tr><th>Invitation sent</th><td>{{ visitor.created_at | pretty }}</td></tr>
+                <tr><th>Details submitted</th><td>{{ visitor.registered_at | pretty }}</td></tr>
+                <tr><th>Entry recorded</th><td>{{ visitor.entry_time | pretty }}</td></tr>
+                <tr><th>Verified by</th><td>{{ visitor.verified_by or '—' }}</td></tr>
+                {% if visitor.remarks %}
+                <tr><th>Remarks from gate</th><td>{{ visitor.remarks }}</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Links</h2>
+    {% if visitor.status == 'INVITED' %}
+        <p class="small muted">The visitor has not filled in their details yet. This is the link they were sent:</p>
+        <p class="tokenbox mono">{{ register_url }}</p>
+        <form method="post" action="{{ url_for('resend_invitation', visitor_id=visitor.id) }}">
+            <button class="btn sm" type="submit">Send the invitation again</button>
+        </form>
+    {% else %}
+        <p class="small muted">The gate pass issued to this visitor:</p>
+        <p class="tokenbox mono">{{ pass_url }}</p>
+        <a class="btn sm ghost" href="{{ pass_url }}" target="_blank" rel="noopener">Open the pass</a>
+    {% endif %}
+</div>
+{% endblock %}

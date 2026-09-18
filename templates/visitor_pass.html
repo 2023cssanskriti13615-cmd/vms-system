@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Gate pass{% endblock %}
+{% block wrapclass %}narrow{% endblock %}
+
+{% block content %}
+{% if visitor.status == 'ENTERED' %}
+    <div class="flash success noprint">This pass has already been used. Entry was recorded at {{ visitor.entry_time | pretty }}.</div>
+{% elif visitor.status == 'REJECTED' %}
+    <div class="flash error noprint">Entry on this pass was refused at the gate. Please contact {{ visitor.person_to_meet }}.</div>
+{% endif %}
+
+<div class="pass">
+    <div class="pass-top">
+        <h2>{{ org_name }}</h2>
+        <p>Visitor gate pass · Single use</p>
+    </div>
+
+    <div class="pass-qr">
+        <img src="{{ url_for('qr_image', token=visitor.token) }}"
+             alt="QR gate pass for {{ visitor.name }}">
+    </div>
+
+    <div class="pass-body">
+        <dl>
+            <dt>Visitor</dt><dd>{{ visitor.name }}</dd>
+            <dt>Company</dt><dd>{{ visitor.company or '—' }}</dd>
+            <dt>Meeting</dt><dd>{{ host }}{% if visitor.unit %}, {{ visitor.unit }}{% endif %}</dd>
+            <dt>Visit time</dt><dd>{{ visitor.visit_datetime | pretty }}</dd>
+            <dt>Pass number</dt><dd class="mono">VP-{{ '%05d' % visitor.id }}</dd>
+        </dl>
+    </div>
+
+    <div class="pass-foot">
+        Show this code at the gate along with a photo ID.
+    </div>
+</div>
+
+<div class="btnrow noprint" style="justify-content:center;margin-top:22px">
+    <button class="btn" onclick="window.print()">Print this pass</button>
+    <a class="btn ghost" href="{{ url_for('qr_image', token=visitor.token) }}" download>Save the QR code</a>
+</div>
+{% endblock %}

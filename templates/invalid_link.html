@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Link not found{% endblock %}
+{% block wrapclass %}narrow{% endblock %}
+
+{% block content %}
+<div class="card center">
+    <h1>This link is not valid</h1>
+    <p class="muted">
+        The invitation link may have been typed incorrectly, or the invitation may have been
+        removed. Ask the person you are meeting to send a fresh invitation.
+    </p>
+    <a class="btn" href="{{ url_for('index') }}">Go to the visitor desk</a>
+</div>
+{% endblock %}
